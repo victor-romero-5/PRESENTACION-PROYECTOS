@@ -32,6 +32,7 @@ h1{font-size:clamp(30px,5vw,46px);line-height:1.05;margin:0 0 10px;text-wrap:bal
 .ctrl{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 button,select{font:inherit;font-size:16px;min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:0 14px;cursor:pointer}
 button:focus-visible,select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.modes{display:flex;flex-wrap:wrap;gap:8px}.mode{font-weight:600}.mode.on{background:var(--navy);border-color:var(--navy);color:#fff}.mode select{min-height:30px;padding:0 6px;margin-left:6px;font-size:15px;border-radius:8px}
 .play{background:var(--hot);border-color:var(--hot);color:#fff;font-weight:700;min-width:130px;font-size:18px}
 .lbl{font-size:13px;color:var(--soft);display:flex;align-items:center;gap:6px}
 .note{font-size:14px;color:var(--soft);margin:0}.note summary{cursor:pointer;min-height:32px;color:var(--ink)}.note p{margin:6px 0}
@@ -54,18 +55,23 @@ h2{font-size:22px;margin:0 0 12px}
 <body>
 <header class="top"><div class="band">
   <p class="kick">TPRS · Grupo 13 · Sesión del 26 de noviembre</p>
-  <h1>Tu parte de la presentación, en formato podcast</h1>
+  <h1>Tu parte de la presentación, para escuchar</h1>
   <p class="lead">Diapositivas 1 a 7: el inicio y el capítulo de compras (procurement). Unos 12 minutos. Las frases en naranja son las ideas que dirás en inglés.</p>
 </div></header>
 
 <main class="band">
   <div class="player" aria-live="polite">
+    <div class="modes" role="tablist">
+      <button class="mode on" data-m="es">Explicación · español</button>
+      <button class="mode" data-m="en">Explanation · English</button>
+      <button class="mode" data-m="sc">Solo el guion · repetir ×<select id="reps" aria-label="Repeticiones"><option>1</option><option>3</option><option selected>5</option><option>8</option><option>10</option></select></button>
+    </div>
     <div class="now" id="now">Pulsa <b>Escuchar</b> para empezar</div>
     <div class="say" id="say">Elige un capítulo o empieza desde el principio.</div>
     <div class="bar"><i id="prog"></i></div>
     <div class="ctrl">
       <button class="play" id="play">▶ Escuchar</button>
-      <button id="lang" aria-label="Cambiar idioma">🌐 English version</button>
+      
       <button id="prev" aria-label="Capítulo anterior">⏮ Anterior</button>
       <button id="next" aria-label="Capítulo siguiente">Siguiente ⏭</button>
       <button id="stop">■ Parar</button>
@@ -267,6 +273,33 @@ const EN=[
 "And if Laura asks why fifty thousand: a statement of work costs about six days, almost four thousand euros, and from fifty thousand that is less than eight percent of the contract.",
 "That's it. Good luck tomorrow."]}
 ];
+const SCRIPT=[
+{t:"Slide 1 · The D3 is one report",d:"0:35",p:[
+"Good afternoon. Last week we showed where each D3 chapter stood: quality and communication written, risk with its scales, procurement empty. Today the D3 is one report of 53 pages with all four chapters. We go through what changed in one week: how we answered Laura's comments, the new procurement chapter, the rated risks, and the quality and communication chapters now inside the report. We finish with the points the team still has to settle before the draft goes to Laura next Thursday, the third of December."]},
+{t:"Slide 2 · What changed since the 19 November session",d:"0:45",p:[
+"This is the week on one page. Grey is what we showed last Thursday, dark is today.",
+"First, the D3 is now a single report. Last week only nine of the 15 template sub-sections had text, spread over four files in the Drive. Now all 15 are written and the report has 53 pages.",
+"Second, the two chapters that were behind. Procurement went from empty to eleven purchase packages with six statements of work, and all 20 risks are now rated: five are high at the start and none after the responses.",
+"Third, quality removed its duplicated roles, and the finished communication chapter moved into the report. The D2 is submitted and did not change."]},
+{t:"Slide 3 · Laura's four comments of 19 November are answered in the report",d:"1:00",p:[
+"Last week Laura made four comments on our D3 plans.",
+"On risk, she asked for the rating formula before the assessment, with weights. Section three point four now gives it: the overall impact is a weighted mean of the quality, schedule and cost impacts, with equal weights, and the score is probability times impact.",
+"On quotations: we work with the budgets we already have. Every figure in procurement is the budget from our cost baseline, and the request to a seller states it as a ceiling, so the seller proposes what it can do for that money.",
+"Statements of work only for expensive items: we write six, which cover 73 percent of what we buy.",
+"And the threshold is our own: writing a statement of work and running a selection takes about six person-days, close to four thousand euros, so we only do it from 50 thousand euros, where that overhead stays under eight percent."]},
+{t:"Slide 4 · All 15 sections are written, in one 53-page report",d:"0:45",p:[
+"This is the report as it stands. Every block is one section of the template, and all 15 have text. The procurement chapter is new this week, and the risk chapter was built from the risk team's workbook: the definitions, the two assessment tables, the matrices and one data sheet per risk. Quality and communication are the texts their authors had finished, now in the common template. The half-filled blocks are written but still need their owners' review: the procurement chapter, and the rating method of the risk chapter. One practical rule from today: we edit in Overleaf, not in the Drive files, so that nothing is overwritten."]},
+{t:"Slide 5 · Procurement: three levels of process",d:"0:50",p:[
+"The procurement chapter starts with make or buy. We keep inside the consortium everything that is the purpose of the project: the engineering, the connector design, assembly and inspection, and the tests themselves. We buy what no partner can do, or would use only once.",
+"Then three levels of process. Level A, from 50 thousand euros, or any item that is safety-critical or on the critical path, gets a full statement of work and a request with the budget as a ceiling.",
+"Level B gets a two-page specification and an order to an approved supplier.",
+"Level C, below fifteen thousand, is a normal purchase order. The fifty thousand comes from the cost of the process itself, as Laura asked."]},
+{t:"Slide 6 · We buy about 1 million euros",d:"0:50",p:[
+"Here is everything we buy, 998 thousand euros, about 39 percent of the direct cost. The dark bars are the six level-A packages. The two largest are the suborbital flight, with the integration support and the flight data, and the test facility for the actual propellants, each around one hundred and sixty-seven thousand euros. Then environmental testing, precision manufacturing, the thirty-two isolation valves and the instrumentation kits. The blue bars are level B, and the grey bar collects all the small purchases. Every value is a budget from our baseline, not a quotation, and the supplier names in the report are candidates. One package is still a lump: the work package four allowance of about 76 thousand euros for software and standards needs to be itemised."]},
+{t:"Slide 7 · Every level-A contract feeds an activity with zero float",d:"0:55",p:[
+"This is when each contract has to be in place. Each line starts when we send the request, the dot is the contract award, and the diamond is the week the output is needed. The important point is on the left: every one of these contracts delivers into an activity with zero float, so a late supplier moves the end of the project. That is why the launch is requested at the system requirements review and contracted at the preliminary design review, well over a year before the flight. The tightest is the valves: if we order them when the WBS says, at the start of activity five point one point two, there are only about 26 weeks before assembly. If the supplier needs more, we reserve a production slot at the preliminary design review."]}
+];
+let rounds=5, round=1;
 let C=ES, lang='es';
 
 const $=id=>document.getElementById(id);
@@ -275,9 +308,9 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"
 let items=[];
 function build(){ items=[];
 C.forEach((c,ci)=>c.p.forEach((p,pi)=>{const q=typeof p==="object";const text=q?p.en:p;
-  text.split(/(?<=[.:?!])\s+/).forEach(s=>{if(s.trim())items.push({ci,pi,q,en:q||lang==="en",s})})}));
-const L=lang==="en";
-$("list").innerHTML=C.map((c,i)=>`<li><button data-c="${i}"><span class="n">${i===0?"Intro":i===C.length-1?(L?"Review":"Final"):(L?"Slide ":"Diapo ")+i}</span><span class="t">${esc(c.t.replace(/^(Diapositiva|Slide) \d+ · /,""))}</span><span class="d">${esc(c.d)}</span></button></li>`).join("");
+  text.split(/(?<=[.:?!])\s+/).forEach(s=>{if(s.trim())items.push({ci,pi,q:q&&lang!=="sc",en:q||lang!=="es",s})})}));
+const L=lang!=="es";
+$("list").innerHTML=C.map((c,i)=>`<li><button data-c="${i}"><span class="n">${lang==="sc"?"":i===0?"Intro":i===C.length-1?(L?"Review":"Final"):(lang==="sc"?"Slide "+(i+1):(L?"Slide ":"Diapo ")+i)}</span><span class="t">${esc(c.t.replace(/^(Diapositiva|Slide) \d+ · /,""))}</span><span class="d">${esc(c.d)}</span></button></li>`).join("");
 $("txt").innerHTML=C.map((c,i)=>`<section id="c${i}"><h3>${esc(c.t)}</h3>${c.p.map((p,j)=>typeof p==="object"?`<p class="en" data-k="${i}-${j}">“${esc(p.en)}”</p>`:`<p data-k="${i}-${j}">${esc(p)}</p>`).join("")}</section>`).join("");
 }
 build();
@@ -293,11 +326,14 @@ if(!S){$("warn").style.display="block"} else {fill(); S.onvoiceschanged=fill;}
 function mark(){ const it=items[idx]; if(!it)return;
   document.querySelectorAll("#list button").forEach(b=>b.classList.toggle("on",+b.dataset.c===it.ci));
   document.querySelectorAll("#txt p").forEach(p=>p.classList.toggle("cur",p.dataset.k===it.ci+"-"+it.pi));
-  $("now").innerHTML=`Ahora: <b>${esc(C[it.ci].t)}</b>`;
+  $("now").innerHTML=(lang==="sc"?`Round ${round} of ${rounds} · `:"")+`${lang==="es"?"Ahora":"Now"}: <b>${esc(C[it.ci].t)}</b>`;
   $("say").textContent=it.s; $("say").classList.toggle("en",it.q);
   $("prog").style.width=(100*idx/items.length)+"%"; }
 
-function speak(){ if(!S||!playing)return; if(idx>=items.length){stop();$("say").textContent="Fin del repaso.";$("prog").style.width="100%";return}
+function speak(){ if(!S||!playing)return; if(idx>=items.length){ if(lang==="sc"&&round<rounds){round++;idx=0;
+    const u=new SpeechSynthesisUtterance("Round "+round+" of "+rounds+"."); const v=voices.find(x=>x.name===$("vEn").value); if(v){u.voice=v;u.lang=v.lang}else u.lang="en-GB"; u.rate=+$("rate").value;
+    u.onend=()=>{if(playing)setTimeout(speak,600)}; $("say").textContent="Round "+round+" of "+rounds; S.speak(u); return}
+  stop();$("say").textContent=lang==="sc"?"Done: "+rounds+" rounds.":lang==="en"?"End of the review.":"Fin del repaso.";$("prog").style.width="100%";return}
   const it=items[idx]; mark();
   const u=new SpeechSynthesisUtterance(it.s); const vn=(it.en?$("vEn"):$("vEs")).value;
   const v=voices.find(x=>x.name===vn); if(v){u.voice=v;u.lang=v.lang}else u.lang=it.en?"en-GB":"es-ES";
@@ -312,12 +348,15 @@ function stop(){ playing=false; if(S)S.cancel(); $("play").textContent="▶ Escu
 function jump(c){ const i=items.findIndex(x=>x.ci===c); if(i<0)return; idx=i; mark(); if(playing){S.cancel();setTimeout(speak,80)} }
 
 $("play").onclick=play;
-$("lang").onclick=()=>{stop(); lang=lang==="es"?"en":"es"; C=lang==="es"?ES:EN; idx=0; build(); mark();
-  $("lang").textContent=lang==="es"?"🌐 English version":"🌐 Versión en español";
-  $("now").innerHTML=lang==="es"?"Pulsa <b>Escuchar</b> para empezar":"Press <b>Escuchar</b> to start";
-  document.querySelector(".lead").textContent=lang==="es"?"Diapositivas 1 a 7: el inicio y el capítulo de compras (procurement). Unos 12 minutos. Las frases en naranja son las que dirás en inglés.":"Slides 1 to 7: the opening and the procurement chapter. About 12 minutes, all in English. Orange lines are the sentences you will say.";
-  document.documentElement.lang=lang;};
-$("stop").onclick=()=>{stop();idx=0;mark()};
+const LEADS={es:"Diapositivas 1 a 7: el inicio y el capítulo de compras (procurement). Unos 12 minutos. Las frases en naranja son las que dirás en inglés.",en:"Slides 1 to 7: the opening and the procurement chapter. About 12 minutes, all in English. Orange lines are the sentences you will say.",sc:"Only your words for slides 1 to 7, exactly as in the speaker script, one paragraph per click. About 5 minutes per round, repeated without stopping."};
+function setMode(m){ stop(); lang=m; C=m==="es"?ES:m==="en"?EN:SCRIPT; idx=0; round=1; rounds=+$("reps").value; build(); mark();
+  document.querySelectorAll(".mode").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
+  $("now").innerHTML=m==="es"?"Pulsa <b>Escuchar</b> para empezar":"Press <b>Escuchar</b> to start";
+  $("say").textContent=m==="sc"?"Repeat after the voice, round after round.":m==="en"?"Pick a chapter or start from the beginning.":"Elige un capítulo o empieza desde el principio.";
+  document.querySelector(".lead").textContent=LEADS[m]; document.documentElement.lang=m==="es"?"es":"en"; }
+document.querySelectorAll(".mode").forEach(b=>b.addEventListener("click",e=>{ if(e.target.closest("select"))return; setMode(b.dataset.m)}));
+$("reps").addEventListener("change",()=>{rounds=+$("reps").value; if(lang!=="sc")setMode("sc")});
+$("stop").onclick=()=>{stop();idx=0;round=1;mark()};
 $("next").onclick=()=>jump(Math.min(C.length-1,(items[idx]?.ci??0)+1));
 $("prev").onclick=()=>{const c=items[idx]?.ci??0; const first=items.findIndex(x=>x.ci===c); jump(idx>first+1?c:Math.max(0,c-1))};
 $("list").onclick=e=>{const b=e.target.closest("button"); if(!b)return; jump(+b.dataset.c); if(!playing)play()};
