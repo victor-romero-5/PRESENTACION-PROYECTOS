@@ -310,7 +310,7 @@ function build(){ items=[];
 C.forEach((c,ci)=>c.p.forEach((p,pi)=>{const q=typeof p==="object";const text=q?p.en:p;
   text.split(/(?<=[.:?!])\s+/).forEach(s=>{if(s.trim())items.push({ci,pi,q:q&&lang!=="sc",en:q||lang!=="es",s})})}));
 const L=lang!=="es";
-$("list").innerHTML=C.map((c,i)=>`<li><button data-c="${i}"><span class="n">${lang==="sc"?"":i===0?"Intro":i===C.length-1?(L?"Review":"Final"):(lang==="sc"?"Slide "+(i+1):(L?"Slide ":"Diapo ")+i)}</span><span class="t">${esc(c.t.replace(/^(Diapositiva|Slide) \d+ · /,""))}</span><span class="d">${esc(c.d)}</span></button></li>`).join("");
+$("list").innerHTML=C.map((c,i)=>`<li><button data-c="${i}"><span class="n">${lang==="sc"?"Slide "+(i+1):i===0?"Intro":i===C.length-1?(L?"Review":"Final"):(lang==="sc"?"Slide "+(i+1):(L?"Slide ":"Diapo ")+i)}</span><span class="t">${esc(c.t.replace(/^(Diapositiva|Slide) \d+ · /,""))}</span><span class="d">${esc(c.d)}</span></button></li>`).join("");
 $("txt").innerHTML=C.map((c,i)=>`<section id="c${i}"><h3>${esc(c.t)}</h3>${c.p.map((p,j)=>typeof p==="object"?`<p class="en" data-k="${i}-${j}">“${esc(p.en)}”</p>`:`<p data-k="${i}-${j}">${esc(p)}</p>`).join("")}</section>`).join("");
 }
 build();
