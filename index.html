@@ -299,7 +299,7 @@ const SCRIPT=[
 {t:"Slide 7 · Every level-A contract feeds an activity with zero float",d:"0:55",p:[
 "This is when each contract has to be in place. Each line starts when we send the request, the dot is the contract award, and the diamond is the week the output is needed. The important point is on the left: every one of these contracts delivers into an activity with zero float, so a late supplier moves the end of the project. That is why the launch is requested at the system requirements review and contracted at the preliminary design review, well over a year before the flight. The tightest is the valves: if we order them when the WBS says, at the start of activity five point one point two, there are only about 26 weeks before assembly. If the supplier needs more, we reserve a production slot at the preliminary design review."]}
 ];
-let rounds=5, round=1;
+let rounds=5, round=1, annAt=-1;
 let C=ES, lang='es';
 
 const $=id=>document.getElementById(id);
@@ -331,11 +331,15 @@ function mark(){ const it=items[idx]; if(!it)return;
   $("say").textContent=it.s; $("say").classList.toggle("en",it.q);
   $("prog").style.width=(100*idx/items.length)+"%"; }
 
-function speak(){ if(!S||!playing)return; if(idx>=items.length){ if(lang==="sc"&&round<rounds){round++;idx=0;
-    const u=new SpeechSynthesisUtterance("Round "+round+" of "+rounds+"."); const v=voices.find(x=>x.name===$("vEn").value); if(v){u.voice=v;u.lang=v.lang}else u.lang="en-GB"; u.rate=+$("rate").value;
-    u.onend=()=>{if(playing)setTimeout(speak,600)}; $("say").textContent="Round "+round+" of "+rounds; S.speak(u); return}
+function speak(){ if(!S||!playing)return; if(idx>=items.length){ if(lang==="sc"&&round<rounds){round++;idx=0;annAt=-1;setTimeout(speak,600);return}
   stop();$("say").textContent=lang==="sc"?"Done: "+rounds+" rounds.":lang==="en"?"End of the review.":"Fin del repaso.";$("prog").style.width="100%";return}
   const it=items[idx]; mark();
+  if(lang==="sc"&&annAt!==idx&&(idx===0||items[idx-1].ci!==it.ci)){ annAt=idx;
+    const W=["zero","one","two","three","four","five","six","seven","eight","nine","ten"];
+    const txt=(idx===0&&round>1?"Round "+W[round]+", slide ":"Slide ")+W[it.ci+1]+".";
+    const a=new SpeechSynthesisUtterance(txt); const av=voices.find(x=>x.name===$("vEn").value); if(av){a.voice=av;a.lang=av.lang}else a.lang="en-GB"; a.rate=+$("rate").value;
+    a.onend=()=>{if(playing)setTimeout(speak,450)}; a.onerror=e=>{if(playing&&e.error!=="interrupted"&&e.error!=="canceled")speak()};
+    S.speak(a); return }
   const u=new SpeechSynthesisUtterance(it.s); const vn=(it.en?$("vEn"):$("vEs")).value;
   const v=voices.find(x=>x.name===vn); if(v){u.voice=v;u.lang=v.lang}else u.lang=it.en?"en-GB":"es-ES";
   u.rate=+$("rate").value*(it.en?0.92:1);
@@ -346,19 +350,19 @@ function speak(){ if(!S||!playing)return; if(idx>=items.length){ if(lang==="sc"&
 function play(){ if(!S)return; if(playing){playing=false;S.cancel();$("play").textContent="▶ Seguir";return}
   playing=true;$("play").textContent="❚❚ Pausa";S.cancel();speak(); }
 function stop(){ playing=false; if(S)S.cancel(); $("play").textContent="▶ Escuchar"; }
-function jump(c){ const i=items.findIndex(x=>x.ci===c); if(i<0)return; idx=i; mark(); if(playing){S.cancel();setTimeout(speak,80)} }
+function jump(c){ const i=items.findIndex(x=>x.ci===c); if(i<0)return; idx=i; annAt=-1; mark(); if(playing){S.cancel();setTimeout(speak,80)} }
 
 $("play").onclick=play;
 ["vEs","vEn"].forEach(id=>$(id).addEventListener("change",()=>{try{localStorage.setItem("voice-"+id,$(id).value)}catch(e){}}));
 const LEADS={es:"Diapositivas 1 a 7: el inicio y el capítulo de compras (procurement). Unos 12 minutos. Las frases en naranja son las que dirás en inglés.",en:"Slides 1 to 7: the opening and the procurement chapter. About 12 minutes, all in English. Orange lines are the sentences you will say.",sc:"Only your words for slides 1 to 7, exactly as in the speaker script, one paragraph per click. About 5 minutes per round, repeated without stopping."};
-function setMode(m){ stop(); lang=m; C=m==="es"?ES:m==="en"?EN:SCRIPT; idx=0; round=1; rounds=+$("reps").value; build(); mark();
+function setMode(m){ stop(); lang=m; C=m==="es"?ES:m==="en"?EN:SCRIPT; idx=0; round=1; annAt=-1; rounds=+$("reps").value; build(); mark();
   document.querySelectorAll(".mode").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
   $("now").innerHTML=m==="es"?"Pulsa <b>Escuchar</b> para empezar":"Press <b>Escuchar</b> to start";
   $("say").textContent=m==="sc"?"Repeat after the voice, round after round.":m==="en"?"Pick a chapter or start from the beginning.":"Elige un capítulo o empieza desde el principio.";
   document.querySelector(".lead").textContent=LEADS[m]; document.documentElement.lang=m==="es"?"es":"en"; }
 document.querySelectorAll(".mode").forEach(b=>b.addEventListener("click",e=>{ if(e.target.closest("select"))return; setMode(b.dataset.m)}));
 $("reps").addEventListener("change",()=>{rounds=+$("reps").value; if(lang!=="sc")setMode("sc")});
-$("stop").onclick=()=>{stop();idx=0;round=1;mark()};
+$("stop").onclick=()=>{stop();idx=0;round=1;annAt=-1;mark()};
 $("next").onclick=()=>jump(Math.min(C.length-1,(items[idx]?.ci??0)+1));
 $("prev").onclick=()=>{const c=items[idx]?.ci??0; const first=items.findIndex(x=>x.ci===c); jump(idx>first+1?c:Math.max(0,c-1))};
 $("list").onclick=e=>{const b=e.target.closest("button"); if(!b)return; jump(+b.dataset.c); if(!playing)play()};
