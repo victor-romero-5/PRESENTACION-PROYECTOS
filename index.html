@@ -319,7 +319,8 @@ const score=v=>{const n=v.name;let s=0;if(/Natural|Neural/i.test(n))s+=10;if(/On
 function fill(){ if(!S)return; voices=S.getVoices();
   const opt=(re,sel)=>{const list=voices.filter(v=>re.test(v.lang));const prev=sel.value;
     sel.innerHTML=list.map(v=>`<option value="${esc(v.name)}">${esc(v.name)} (${esc(v.lang)})</option>`).join("")||'<option value="">Por defecto</option>';
-    if(prev&&list.some(v=>v.name===prev))sel.value=prev; else {const best=list.slice().sort((a,b)=>score(b)-score(a))[0]; if(best)sel.value=best.name;}};
+    let saved=null; try{saved=localStorage.getItem("voice-"+sel.id)}catch(e){}
+    if(prev&&list.some(v=>v.name===prev))sel.value=prev; else if(saved&&list.some(v=>v.name===saved))sel.value=saved; else {const best=list.slice().sort((a,b)=>score(b)-score(a))[0]; if(best)sel.value=best.name;}};
   opt(/^es/i,$("vEs")); opt(/^en/i,$("vEn")); }
 if(!S){$("warn").style.display="block"} else {fill(); S.onvoiceschanged=fill;}
 
@@ -348,6 +349,7 @@ function stop(){ playing=false; if(S)S.cancel(); $("play").textContent="▶ Escu
 function jump(c){ const i=items.findIndex(x=>x.ci===c); if(i<0)return; idx=i; mark(); if(playing){S.cancel();setTimeout(speak,80)} }
 
 $("play").onclick=play;
+["vEs","vEn"].forEach(id=>$(id).addEventListener("change",()=>{try{localStorage.setItem("voice-"+id,$(id).value)}catch(e){}}));
 const LEADS={es:"Diapositivas 1 a 7: el inicio y el capítulo de compras (procurement). Unos 12 minutos. Las frases en naranja son las que dirás en inglés.",en:"Slides 1 to 7: the opening and the procurement chapter. About 12 minutes, all in English. Orange lines are the sentences you will say.",sc:"Only your words for slides 1 to 7, exactly as in the speaker script, one paragraph per click. About 5 minutes per round, repeated without stopping."};
 function setMode(m){ stop(); lang=m; C=m==="es"?ES:m==="en"?EN:SCRIPT; idx=0; round=1; rounds=+$("reps").value; build(); mark();
   document.querySelectorAll(".mode").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
