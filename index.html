@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Podcast D3 · Víctor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: calm study companion, like a well-produced radio briefing.
+   IDEA: an episode player from a radio studio: one big "on air" deck, chapters as a tracklist.
+   PICTURE: the player itself — large play button, the sentence being spoken shown big.
+   COLOUR and TYPE: the deck's own navy, gold and click-orange; Schibsted Grotesk.
+   LAYOUT: player on top (title, now-speaking card, controls), chapter list below, full text after. */
+:root{color-scheme:light dark;--bg:light-dark(#f3f1ec,#0f1626);--panel:light-dark(#ffffff,#18233b);--ink:light-dark(#14284b,#eef1f7);--soft:light-dark(#5d6880,#a7b1c6);--gold:#b8892c;--hot:#e2622b;--navy:#14284b;--line:light-dark(#dcd8cf,#2a3755)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Schibsted Grotesk",system-ui,sans-serif;overflow-x:clip}
+.band{padding:clamp(24px,4vw,56px) max(5vw,16px);max-width:1000px;margin:0 auto}
+.top{background:var(--navy);color:#fff}
+.top .band{padding-bottom:clamp(28px,4vw,48px)}
+.kick{color:var(--gold);font-weight:700;font-size:14px;margin:0 0 6px}
+h1{font-size:clamp(30px,5vw,46px);line-height:1.05;margin:0 0 10px;text-wrap:balance}
+.lead{color:#c9d2e4;max-width:62ch;margin:0}
+.player{background:var(--panel);border-radius:18px;margin-top:-26px;box-shadow:0 10px 30px rgba(20,40,75,.18);padding:clamp(18px,3vw,28px);display:grid;gap:18px}
+.now{font-size:13px;color:var(--soft);font-weight:600}
+.now b{color:var(--gold)}
+.say{font-size:clamp(19px,2.6vw,24px);line-height:1.35;min-height:4.2em;font-weight:600}
+.say.en{color:var(--hot)}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--gold);transition:width .3s}
+.ctrl{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+button,select{font:inherit;font-size:16px;min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:0 14px;cursor:pointer}
+button:focus-visible,select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.play{background:var(--hot);border-color:var(--hot);color:#fff;font-weight:700;min-width:130px;font-size:18px}
+.lbl{font-size:13px;color:var(--soft);display:flex;align-items:center;gap:6px}
+.note{font-size:13px;color:var(--soft);margin:0}
+.warn{font-size:14px;color:var(--hot);margin:0;display:none}
+h2{font-size:22px;margin:0 0 12px}
+.list{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.list button{width:100%;text-align:left;display:flex;gap:12px;align-items:center;padding:10px 14px}
+.list .n{color:var(--gold);font-weight:700;width:3.2em;flex:none}
+.list .t{flex:1}
+.list .d{color:var(--soft);font-size:13px;flex:none}
+.list button.on{border-color:var(--hot);box-shadow:inset 4px 0 0 var(--hot)}
+.txt section{border-top:1px solid var(--line);padding:16px 0}
+.txt h3{margin:0 0 8px;font-size:17px}
+.txt p{margin:0 0 8px;max-width:70ch}
+.txt p.en{color:var(--hot);font-style:italic}
+.txt p.cur{background:light-dark(#fff3d6,#2b2a1c);border-radius:6px}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+</style>
+</head>
+<body>
+<header class="top"><div class="band">
+  <p class="kick">TPRS · Grupo 13 · Sesión del 26 de noviembre</p>
+  <h1>Tu parte de la presentación, en formato podcast</h1>
+  <p class="lead">Diapositivas 1 a 7: el inicio y el capítulo de compras (procurement). Unos 12 minutos. Las frases en naranja son las ideas que dirás en inglés.</p>
+</div></header>
+
+<main class="band">
+  <div class="player" aria-live="polite">
+    <div class="now" id="now">Pulsa <b>Escuchar</b> para empezar</div>
+    <div class="say" id="say">Elige un capítulo o empieza desde el principio.</div>
+    <div class="bar"><i id="prog"></i></div>
+    <div class="ctrl">
+      <button class="play" id="play">▶ Escuchar</button>
+      <button id="prev" aria-label="Capítulo anterior">⏮ Anterior</button>
+      <button id="next" aria-label="Capítulo siguiente">Siguiente ⏭</button>
+      <button id="stop">■ Parar</button>
+    </div>
+    <div class="ctrl">
+      <label class="lbl">Velocidad
+        <select id="rate"><option value="0.85">0,85×</option><option value="1" selected>1×</option><option value="1.15">1,15×</option><option value="1.3">1,3×</option></select>
+      </label>
+      <label class="lbl">Voz español <select id="vEs"></select></label>
+      <label class="lbl">Voz inglés <select id="vEn"></select></label>
+    </div>
+    <p class="warn" id="warn">Este navegador no tiene voz sintética. Prueba con Chrome, Safari o Edge, o lee el texto de abajo.</p>
+    <p class="note">La voz es la del propio dispositivo (en iPhone y Android las voces en español suelen sonar bien). Si no se oye en el móvil, quita el modo silencio.</p>
+  </div>
+</main>
+
+<section class="band" style="padding-top:0">
+  <h2>Capítulos</h2>
+  <ul class="list" id="list"></ul>
+</section>
+
+<section class="band txt" style="padding-top:0">
+  <h2>Texto completo</h2>
+  <div id="txt"></div>
+</section>
+
+<script>
+{
+const C=[
+{t:"Introducción",d:"Qué vas a escuchar",p:[
+"Hola Víctor. Esto es un repaso de tu parte de la presentación de mañana, la sesión del 26 de noviembre.",
+"Tú abres la presentación y llevas las diapositivas uno a siete: el inicio y el capítulo de compras, que en inglés es procurement. Después le pasas la palabra a Roger, que hace los riesgos, calidad, comunicación y el cierre.",
+"La presentación se llama The D3 is one report: el D3 ya es un solo informe. Su objetivo es contar qué ha cambiado en una semana, desde la sesión del 19 de noviembre, y qué queda pendiente.",
+"Recuerda el contexto. El D3 es el tercer entregable de la asignatura y tiene cuatro capítulos: compras, calidad, riesgos y comunicación. Se entrega el 8 de diciembre.",
+"Vamos diapositiva por diapositiva. En cada una te cuento qué se ve, qué tienes que decir y cuál es la idea que debes recordar."]},
+{t:"Diapositiva 1 · Portada",d:"0:35",p:[
+"Diapositiva uno. La portada. Arriba pone TPRS, Translational Propellant Refuelling System, Grupo 13. El título es The D3 is one report.",
+"Abajo hay una línea de tiempo con las fechas del curso: el D1 el 13 de octubre, el D2 el 17 de noviembre, la sesión pasada el 19, hoy el 26, el D3 el 8 de diciembre, la propuesta Horizon el 17 y el examen el 21.",
+"Lo que dices es una comparación. La semana pasada, calidad y comunicación estaban escritos, riesgos solo tenía las escalas y compras estaba vacío. Hoy el D3 es un único informe de 53 páginas con los cuatro capítulos.",
+{en:"Today the D3 is one report of 53 pages with all four chapters."},
+"Y adelantas el recorrido: cómo habéis respondido a los comentarios de Laura, el capítulo nuevo de compras, los riesgos ya puntuados, calidad y comunicación dentro del informe, y lo que queda pendiente.",
+"Idea para recordar: de cuatro archivos sueltos a un solo informe de 53 páginas."]},
+{t:"Diapositiva 2 · Qué ha cambiado",d:"0:45",p:[
+"Diapositiva dos. What changed since the 19 November session. Es el resumen de toda la semana en una tabla.",
+"En gris y tachado está lo que se enseñó el 19. En oscuro, lo de hoy. Empiezas diciendo eso:",
+{en:"Grey is what we showed last Thursday, dark is today."},
+"Primer clic: el informe. La semana pasada solo nueve de las quince secciones de la plantilla tenían texto, repartidas en cuatro archivos del Drive. Ahora están las quince y el informe tiene 53 páginas.",
+"Segundo clic: los dos capítulos que iban retrasados. Compras ha pasado de vacío a once paquetes de compra con seis statements of work. Y los veinte riesgos ya están puntuados: cinco son altos al principio y ninguno después de las respuestas.",
+"Tercer clic: calidad ha quitado sus roles duplicados, de trece a diez, y comunicación, que ya estaba terminado, ahora está dentro del informe. El D2 está entregado y no ha cambiado.",
+"Idea para recordar: tres bloques. El informe unido, compras y riesgos completados, y calidad y comunicación integrados."]},
+{t:"Diapositiva 3 · Los comentarios de Laura",d:"1:00",p:[
+"Diapositiva tres. Laura's four comments of 19 November are answered in the report. Es la más importante para la profesora, porque demuestra que el grupo ha hecho caso a lo que pidió.",
+"La tabla tiene dos columnas: a la izquierda el comentario de Laura, a la derecha lo que hace ahora el D3. Son cuatro comentarios, uno por clic.",
+"Comentario uno, riesgos. Laura pidió definir una fórmula con pesos antes de evaluar los riesgos. Ahora el apartado tres punto cuatro la tiene: el impacto total es la media ponderada de tres impactos, calidad, plazo y coste, con pesos iguales de un tercio. Y la puntuación del riesgo es probabilidad por impacto.",
+{en:"The overall impact is a weighted mean of quality, schedule and cost, with equal weights, and the score is probability times impact."},
+"Comentario dos, las cotizaciones. Como el proyecto no existe, no hay ofertas de proveedores. Así que se trabaja con el presupuesto que ya está en el D2. A cada proveedor se le da esa cifra como techo, en inglés ceiling, y él propone qué puede hacer por ese dinero.",
+{en:"The request to a seller states the budget as a ceiling, so the seller proposes what it can do for that money."},
+"Comentario tres. Statements of work, es decir, pliegos de condiciones, solo para lo caro. Se hacen seis, y cubren el setenta y tres por ciento de todo lo que se compra.",
+"Comentario cuatro, el umbral. Laura dijo que cada grupo pusiera su propio límite, porque preparar un statement of work también cuesta dinero. Preparar uno y elegir proveedor son unos seis días de trabajo, casi cuatro mil euros. Por eso solo se hace a partir de cincuenta mil euros, cuando ese coste es menos del ocho por ciento del contrato.",
+{en:"We only write a statement of work from fifty thousand euros, where that overhead stays under eight percent."},
+"Idea para recordar: fórmula con pesos, presupuesto como techo, seis statements of work, y umbral de cincuenta mil euros justificado."]},
+{t:"Diapositiva 4 · El informe por dentro",d:"0:45",p:[
+"Diapositiva cuatro. All 15 sections are written, in one 53-page report.",
+"Se ven cuatro columnas, una por capítulo, con sus secciones. Procurement, doce páginas. Quality, nueve. Risk, dieciséis. Communication, dieciséis.",
+"Cada bloque es una sección de la plantilla, y las quince tienen texto. Hay dos tipos de bloque: escrito, y escrito pero pendiente de que lo revisen sus autores.",
+"Lo que dices: el capítulo de compras es nuevo de esta semana. El de riesgos se ha montado a partir de la hoja de cálculo del equipo de riesgos: definiciones, tablas, matrices y una ficha por riesgo. Calidad y comunicación son los textos que ya habían terminado sus autores.",
+"Los bloques a medias, pendientes de revisión, son el capítulo de compras y la metodología de riesgos.",
+"Y una regla práctica, que tienes que decir claramente: a partir de hoy se edita en Overleaf, no en los archivos del Drive, para no pisarse.",
+{en:"From today we edit in Overleaf, not in the Drive files, so that nothing is overwritten."},
+"Idea para recordar: quince de quince secciones, compras y metodología de riesgos pendientes de revisión, y todo se edita en Overleaf."]},
+{t:"Diapositiva 5 · Compras: tres niveles",d:"0:50",p:[
+"Diapositiva cinco. Empieza tu parte de compras. Procurement: three levels of process.",
+"Primero explicas el make or buy, hacer o comprar. Dentro del consorcio se queda todo lo que es el objetivo del proyecto: la ingeniería, el diseño del conector, el montaje y la inspección en la sala limpia de Thales, y los propios ensayos.",
+"Se compra fuera lo que ningún socio puede hacer, o lo que solo se usaría una vez: el vuelo, las instalaciones de ensayo, la fabricación de precisión, las válvulas y los sensores.",
+{en:"We keep inside the consortium everything that is the purpose of the project, and we buy what no partner can do, or would use only once."},
+"Después, tres niveles, uno por clic.",
+"Nivel A: a partir de cincuenta mil euros, o cualquier cosa que sea crítica para la seguridad o esté en el camino crítico. Tiene statement of work completo, se pide oferta con el presupuesto como techo y se firma un contrato con hitos. Son seis paquetes y unos 731 mil euros.",
+"Nivel B: entre quince mil y cincuenta mil euros. Basta una especificación de dos páginas y un pedido a un proveedor homologado. Cinco paquetes, unos 182 mil euros.",
+"Nivel C: menos de quince mil euros. Un pedido de catálogo normal. Unos 85 mil euros en total.",
+"Y cierras diciendo que los cincuenta mil euros salen del coste del propio proceso, como pidió Laura.",
+"Idea para recordar: make or buy, y tres niveles. A, desde cincuenta mil. B, de quince a cincuenta mil. C, menos de quince mil."]},
+{t:"Diapositiva 6 · Qué compramos",d:"0:50",p:[
+"Diapositiva seis. We buy about 1 M euros, and six packages are three quarters of it.",
+"Es un gráfico de barras horizontales con los once paquetes de compra. Las barras oscuras son el nivel A, las azules el nivel B, y la gris son las compras pequeñas.",
+"El total es de casi un millón de euros: 997.565 euros, el 38,5 por ciento del coste directo del proyecto.",
+{en:"Here is everything we buy, about one million euros, thirty-nine percent of the direct cost."},
+"Los dos paquetes más grandes, de unos 167 mil euros cada uno, son el PP-01, el vuelo suborbital, que incluye el soporte de integración y los datos del vuelo, y el PP-02, la instalación para ensayar con propelente real.",
+"Detrás vienen los ensayos ambientales, 121 mil euros; la fabricación de precisión, 114 mil; las 32 válvulas criogénicas, 90 mil; y la instrumentación, 72 mil.",
+"Dos avisos importantes. Uno: todas las cifras son presupuestos del D2, no cotizaciones, y los nombres de proveedores son solo candidatos. Dos: queda una partida sin desglosar, unos 76 mil euros del WP4 para software y normas.",
+"Idea para recordar: un millón, seis paquetes son el setenta y tres por ciento, vuelo e instalación de ensayos a 167 mil cada uno, y presupuestos, no cotizaciones."]},
+{t:"Diapositiva 7 · Cuándo contratar",d:"0:55",p:[
+"Diapositiva siete, la última tuya. Every level-A contract feeds an activity with zero float.",
+"Es una línea de tiempo en semanas desde el inicio del proyecto, con líneas verticales en las revisiones: SRR en la semana 35, PDR en la 61, CDR en la 87, TRR en la 119 y la aceptación final en la 156.",
+"Explica cómo se lee. Cada línea empieza cuando se envía la petición de oferta. El punto es la firma del contrato. Y el rombo es la semana en la que hace falta lo comprado.",
+{en:"Each line starts when we send the request, the dot is the contract award, and the diamond is the week the output is needed."},
+"El mensaje clave: los seis contratos de nivel A entregan en actividades sin holgura. Si un proveedor se retrasa, se retrasa el final del proyecto.",
+{en:"Every one of these contracts delivers into an activity with zero float, so a late supplier moves the end of the project."},
+"Por eso el vuelo se pide en la SRR, semana 35, y se contrata en la PDR, semana 61. Más de un año antes de volar.",
+"Y lo más justo son las válvulas. Si se piden cuando dice el WBS, al empezar la actividad 5.1.2, solo quedan unas 26 semanas hasta el montaje. Si el proveedor necesita más, se reserva un hueco de fabricación en la PDR.",
+"Aquí terminas y le pasas la palabra a Roger, que empieza con los riesgos.",
+"Idea para recordar: holgura cero en todo, vuelo contratado en la PDR, y válvulas con solo 26 semanas."]},
+{t:"Repaso final",d:"Cifras clave",p:[
+"Repaso rápido, para que se te quede.",
+"Uno. El D3 ya es un solo informe de 53 páginas con quince de quince secciones.",
+"Dos. Cuatro comentarios de Laura respondidos: fórmula con pesos de un tercio, presupuesto como techo, seis statements of work, umbral de cincuenta mil euros.",
+"Tres. Make or buy: dentro, ingeniería, conector, montaje y ensayos. Fuera, vuelo, instalaciones, fabricación de precisión, válvulas y sensores.",
+"Cuatro. Niveles: A desde cincuenta mil, B de quince a cincuenta mil, C menos de quince mil.",
+"Cinco. Compramos casi un millón de euros, el 38,5 por ciento del coste directo. Seis paquetes de nivel A, 731 mil euros, el 73 por ciento.",
+"Seis. Lo más caro: vuelo suborbital y ensayos con propelente real, 167 mil cada uno.",
+"Siete. Todos los contratos de nivel A van a holgura cero. Vuelo pedido en la SRR y contratado en la PDR. Válvulas con 26 semanas de margen.",
+"Y si Laura pregunta por qué cincuenta mil: porque un statement of work cuesta unos seis días, casi cuatro mil euros, y a partir de cincuenta mil eso es menos del ocho por ciento del contrato.",
+"Eso es todo. Mucha suerte mañana."]}
+];
+
+const $=id=>document.getElementById(id);
+const S=window.speechSynthesis;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const items=[];
+C.forEach((c,ci)=>c.p.forEach((p,pi)=>{const en=typeof p==="object";const text=en?p.en:p;
+  text.split(/(?<=[.:?!])\s+/).forEach(s=>{if(s.trim())items.push({ci,pi,en,s})})}));
+
+$("list").innerHTML=C.map((c,i)=>`<li><button data-c="${i}"><span class="n">${i===0?"Intro":i===C.length-1?"Final":"Diapo "+i}</span><span class="t">${esc(c.t.replace(/^Diapositiva \d+ · /,""))}</span><span class="d">${esc(c.d)}</span></button></li>`).join("");
+$("txt").innerHTML=C.map((c,i)=>`<section id="c${i}"><h3>${esc(c.t)}</h3>${c.p.map((p,j)=>typeof p==="object"?`<p class="en" data-k="${i}-${j}">“${esc(p.en)}”</p>`:`<p data-k="${i}-${j}">${esc(p)}</p>`).join("")}</section>`).join("");
+
+let idx=0,playing=false,voices=[];
+function fill(){ if(!S)return; voices=S.getVoices();
+  const opt=(re,sel)=>{const list=voices.filter(v=>re.test(v.lang));const prev=sel.value;
+    sel.innerHTML=list.map(v=>`<option value="${esc(v.name)}">${esc(v.name)} (${esc(v.lang)})</option>`).join("")||'<option value="">Por defecto</option>';
+    if(prev&&list.some(v=>v.name===prev))sel.value=prev; else {const pref=list.find(v=>/Google|Mónica|Monica|Paulina|Jorge|Daniel|Samantha|Natural|Premium|Enhanced/i.test(v.name)); if(pref)sel.value=pref.name;}};
+  opt(/^es/i,$("vEs")); opt(/^en/i,$("vEn")); }
+if(!S){$("warn").style.display="block"} else {fill(); S.onvoiceschanged=fill;}
+
+function mark(){ const it=items[idx]; if(!it)return;
+  document.querySelectorAll("#list button").forEach(b=>b.classList.toggle("on",+b.dataset.c===it.ci));
+  document.querySelectorAll("#txt p").forEach(p=>p.classList.toggle("cur",p.dataset.k===it.ci+"-"+it.pi));
+  $("now").innerHTML=`Ahora: <b>${esc(C[it.ci].t)}</b>`;
+  $("say").textContent=it.s; $("say").classList.toggle("en",it.en);
+  $("prog").style.width=(100*idx/items.length)+"%"; }
+
+function speak(){ if(!S||!playing)return; if(idx>=items.length){stop();$("say").textContent="Fin del repaso.";$("prog").style.width="100%";return}
+  const it=items[idx]; mark();
+  const u=new SpeechSynthesisUtterance(it.s); const vn=(it.en?$("vEn"):$("vEs")).value;
+  const v=voices.find(x=>x.name===vn); if(v){u.voice=v;u.lang=v.lang}else u.lang=it.en?"en-GB":"es-ES";
+  u.rate=+$("rate").value*(it.en?0.92:1);
+  u.onend=()=>{if(playing){idx++;setTimeout(speak,it.s.endsWith(":")?120:260)}};
+  u.onerror=e=>{if(playing&&e.error!=="interrupted"&&e.error!=="canceled"){idx++;speak()}};
+  S.speak(u); }
+
+function play(){ if(!S)return; if(playing){playing=false;S.cancel();$("play").textContent="▶ Seguir";return}
+  playing=true;$("play").textContent="❚❚ Pausa";S.cancel();speak(); }
+function stop(){ playing=false; if(S)S.cancel(); $("play").textContent="▶ Escuchar"; }
+function jump(c){ const i=items.findIndex(x=>x.ci===c); if(i<0)return; idx=i; mark(); if(playing){S.cancel();setTimeout(speak,80)} }
+
+$("play").onclick=play;
+$("stop").onclick=()=>{stop();idx=0;mark()};
+$("next").onclick=()=>jump(Math.min(C.length-1,(items[idx]?.ci??0)+1));
+$("prev").onclick=()=>{const c=items[idx]?.ci??0; const first=items.findIndex(x=>x.ci===c); jump(idx>first+1?c:Math.max(0,c-1))};
+$("list").onclick=e=>{const b=e.target.closest("button"); if(!b)return; jump(+b.dataset.c); if(!playing)play()};
+$("txt").onclick=e=>{const p=e.target.closest("p[data-k]"); if(!p)return; const [c,j]=p.dataset.k.split("-").map(Number); const i=items.findIndex(x=>x.ci===c&&x.pi===j); if(i>=0){idx=i; mark(); if(playing){S.cancel();setTimeout(speak,80)} else play()}};
+document.addEventListener("keydown",e=>{if(e.target.closest("select"))return; if(e.code==="Space"){e.preventDefault();play()} if(e.key==="ArrowRight")$("next").click(); if(e.key==="ArrowLeft")$("prev").click()});
+mark(); $("now").innerHTML="Pulsa <b>Escuchar</b> para empezar";
+}
+</script>
+</body>
+</html>
