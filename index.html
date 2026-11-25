@@ -34,7 +34,7 @@ button,select{font:inherit;font-size:16px;min-height:44px;border-radius:12px;bor
 button:focus-visible,select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .play{background:var(--hot);border-color:var(--hot);color:#fff;font-weight:700;min-width:130px;font-size:18px}
 .lbl{font-size:13px;color:var(--soft);display:flex;align-items:center;gap:6px}
-.note{font-size:13px;color:var(--soft);margin:0}
+.note{font-size:14px;color:var(--soft);margin:0}.note summary{cursor:pointer;min-height:32px;color:var(--ink)}.note p{margin:6px 0}
 .warn{font-size:14px;color:var(--hot);margin:0;display:none}
 h2{font-size:22px;margin:0 0 12px}
 .list{display:grid;gap:8px;margin:0;padding:0;list-style:none}
@@ -65,6 +65,7 @@ h2{font-size:22px;margin:0 0 12px}
     <div class="bar"><i id="prog"></i></div>
     <div class="ctrl">
       <button class="play" id="play">▶ Escuchar</button>
+      <button id="lang" aria-label="Cambiar idioma">🌐 English version</button>
       <button id="prev" aria-label="Capítulo anterior">⏮ Anterior</button>
       <button id="next" aria-label="Capítulo siguiente">Siguiente ⏭</button>
       <button id="stop">■ Parar</button>
@@ -77,7 +78,13 @@ h2{font-size:22px;margin:0 0 12px}
       <label class="lbl">Voz inglés <select id="vEn"></select></label>
     </div>
     <p class="warn" id="warn">Este navegador no tiene voz sintética. Prueba con Chrome, Safari o Edge, o lee el texto de abajo.</p>
-    <p class="note">La voz es la del propio dispositivo (en iPhone y Android las voces en español suelen sonar bien). Si no se oye en el móvil, quita el modo silencio.</p>
+    <details class="note"><summary><b>¿Suena robótica? Cómo conseguir una voz natural</b></summary>
+      <p>La página usa las voces de tu dispositivo y escoge sola la más natural que encuentre. Las mejores, por orden:</p>
+      <p><b>1. Microsoft Edge (ordenador):</b> abre esta página en Edge y elige una voz que diga <i>Online (Natural)</i>, por ejemplo <i>Microsoft Elvira Online (Natural)</i> en español o <i>Microsoft Sonia / Ryan Online (Natural)</i> en inglés. Son voces neuronales y suenan casi humanas.</p>
+      <p><b>2. iPhone:</b> Ajustes → Accesibilidad → Contenido leído → Voces → Español (o Inglés) y descarga una voz <i>Mejorada</i> o <i>Premium</i> (por ejemplo Mónica o Siri). Después recarga la página y elígela.</p>
+      <p><b>3. Chrome (ordenador o Android):</b> elige una voz que empiece por <i>Google</i>.</p>
+      <p>Si no se oye en el móvil, quita el modo silencio.</p>
+    </details>
   </div>
 </main>
 
@@ -93,7 +100,7 @@ h2{font-size:22px;margin:0 0 12px}
 
 <script>
 {
-const C=[
+const ES=[
 {t:"Introducción",d:"Qué vas a escuchar",p:[
 "Hola Víctor. Esto es un repaso de tu parte de la presentación de mañana, la sesión del 26 de noviembre.",
 "Tú abres la presentación y llevas las diapositivas uno a siete: el inicio y el capítulo de compras, que en inglés es procurement. Después le pasas la palabra a Roger, que hace los riesgos, calidad, comunicación y el cierre.",
@@ -178,22 +185,108 @@ const C=[
 "Y si Laura pregunta por qué cincuenta mil: porque un statement of work cuesta unos seis días, casi cuatro mil euros, y a partir de cincuenta mil eso es menos del ocho por ciento del contrato.",
 "Eso es todo. Mucha suerte mañana."]}
 ];
+const EN=[
+{t:"Introduction",d:"What you will hear",p:[
+"Hi Víctor. This is a review of your part of tomorrow's presentation, the session of the twenty-sixth of November.",
+"You open the presentation and take slides one to seven: the opening and the procurement chapter. Then you hand over to Roger, who covers risk, quality, communication and the closing.",
+"The deck is called: The D3 is one report. Its goal is to show what changed in one week, since the session of the nineteenth of November, and what is still open.",
+"Some context first. The D3 is the third deliverable of the course. It has four chapters: procurement, quality, risk and communication. It is due on the eighth of December.",
+"Let's go slide by slide. For each one, you will hear what is on the screen, what you say, and the one idea to remember."]},
+{t:"Slide 1 · Title",d:"0:35",p:[
+"Slide one. The title slide. At the top: TPRS, Translational Propellant Refuelling System, Group 13. The title is: The D3 is one report.",
+"At the bottom there is a timeline of the course: D1 on the thirteenth of October, D2 on the seventeenth of November, last session on the nineteenth, today the twenty-sixth, D3 on the eighth of December, the Horizon proposal on the seventeenth, and the exam on the twenty-first.",
+"What you say is a before and after. Last week, quality and communication were written, risk only had its scales, and procurement was empty.",
+{en:"Today the D3 is one report of 53 pages with all four chapters."},
+"Then you announce the route: how we answered Laura's comments, the new procurement chapter, the rated risks, quality and communication inside the report, and the open points.",
+"Idea to remember: from four separate files to one report of fifty-three pages."]},
+{t:"Slide 2 · What changed",d:"0:45",p:[
+"Slide two. What changed since the 19 November session. It is the whole week in one table.",
+"Grey and struck through is what was shown on the nineteenth. Dark is today. You start by saying exactly that.",
+{en:"Grey is what we showed last Thursday, dark is today."},
+"First click: the report. Last week only nine of the fifteen template sections had text, spread over four files in the Drive. Now all fifteen are written, and the report has fifty-three pages.",
+"Second click: the two chapters that were behind. Procurement went from empty to eleven purchase packages with six statements of work. And all twenty risks are now rated: five are high at the start, and none after the responses.",
+"Third click: quality removed its duplicated roles, from thirteen to ten, and the finished communication chapter moved into the report. The D2 is submitted and did not change.",
+"Idea to remember: three blocks. One report, procurement and risk completed, quality and communication merged."]},
+{t:"Slide 3 · Laura's comments",d:"1:00",p:[
+"Slide three. Laura's four comments of 19 November are answered in the report. This is the key slide for the professor, because it shows the group listened.",
+"The table has two columns: on the left, Laura's comment; on the right, what the D3 does now. Four comments, one per click.",
+"Comment one: risk. Laura asked for a weighted formula before rating the risks. Section three point four now gives it.",
+{en:"The overall impact is a weighted mean of quality, schedule and cost, with equal weights, and the score is probability times impact."},
+"Comment two: quotations. The project does not exist yet, so there are no supplier quotes. We work with the budget we already have in the D2.",
+{en:"The request to a seller states the budget as a ceiling, so the seller proposes what it can do for that money."},
+"Comment three: statements of work only for expensive items. We write six, and they cover seventy-three percent of everything we buy.",
+"Comment four: the threshold is our own. Writing a statement of work and running a selection takes about six person-days, close to four thousand euros.",
+{en:"We only write a statement of work from fifty thousand euros, where that overhead stays under eight percent."},
+"Idea to remember: weighted formula, budget as a ceiling, six statements of work, and a fifty-thousand-euro threshold with a reason behind it."]},
+{t:"Slide 4 · Inside the report",d:"0:45",p:[
+"Slide four. All 15 sections are written, in one 53-page report.",
+"You see four columns, one per chapter. Procurement, twelve pages. Quality, nine. Risk, sixteen. Communication, sixteen.",
+"Every block is one section of the template, and all fifteen have text. Some blocks are written; others are written but still waiting for their owners' review.",
+"The procurement chapter is new this week. The risk chapter was built from the risk team's workbook: the definitions, the assessment tables, the matrices, and one data sheet per risk. Quality and communication are the texts their authors had already finished.",
+"The half-filled blocks are the procurement chapter and the risk rating method.",
+{en:"From today we edit in Overleaf, not in the Drive files, so that nothing is overwritten."},
+"Idea to remember: fifteen out of fifteen, two blocks waiting for review, and everything is edited in Overleaf."]},
+{t:"Slide 5 · Procurement levels",d:"0:50",p:[
+"Slide five. Your procurement part starts here. Procurement: three levels of process.",
+"First, make or buy. Everything that is the purpose of the project stays inside the consortium: the engineering, the connector design, assembly and inspection in the Thales clean room, and the tests themselves.",
+"We buy what no partner can do, or would use only once: the flight, the test facilities, precision manufacturing, valves and sensors.",
+{en:"We keep inside the consortium everything that is the purpose of the project, and we buy what no partner can do, or would use only once."},
+"Then three levels, one per click.",
+"Level A: from fifty thousand euros, or anything safety-critical or on the critical path. Full statement of work, a request with the budget as a ceiling, and a contract with milestones. Six packages, about seven hundred and thirty thousand euros.",
+"Level B: between fifteen and fifty thousand euros. A two-page specification and an order to an approved supplier. Five packages, about one hundred and eighty thousand euros.",
+"Level C: below fifteen thousand euros. A normal catalogue purchase order. About eighty-five thousand euros in total.",
+"You close by saying that the fifty thousand comes from the cost of the process itself, as Laura asked.",
+"Idea to remember: make or buy, then A from fifty thousand, B from fifteen to fifty, C below fifteen."]},
+{t:"Slide 6 · What we buy",d:"0:50",p:[
+"Slide six. We buy about one million euros, and six packages are three quarters of it.",
+"It is a horizontal bar chart with the eleven packages. Dark bars are level A, blue bars level B, and the grey bar collects the small purchases.",
+{en:"Here is everything we buy, about one million euros, thirty-nine percent of the direct cost."},
+"The exact figure is nine hundred and ninety-seven thousand, five hundred and sixty-five euros: thirty-eight point five percent of the direct cost.",
+"The two largest packages, about one hundred and sixty-seven thousand euros each, are PP-01, the suborbital flight, with integration support and flight data, and PP-02, the test facility for the actual propellants.",
+"Then environmental testing, one hundred and twenty-one thousand; precision manufacturing, one hundred and fourteen thousand; the thirty-two cryogenic valves, ninety thousand; and the instrumentation, seventy-two thousand.",
+"Two warnings. Every value is a budget from our baseline, not a quotation, and the supplier names are only candidates. And one package is still a lump: the work package four allowance of about seventy-six thousand euros for software and standards.",
+"Idea to remember: one million euros, six packages are seventy-three percent, flight and propellant tests at one hundred and sixty-seven thousand each, and budgets, not quotes."]},
+{t:"Slide 7 · When to contract",d:"0:55",p:[
+"Slide seven, your last one. Every level-A contract feeds an activity with zero float.",
+"It is a timeline in weeks from the project start, with vertical lines at the reviews: SRR at week thirty-five, PDR at sixty-one, CDR at eighty-seven, TRR at one hundred and nineteen, and the final acceptance at one hundred and fifty-six.",
+{en:"Each line starts when we send the request, the dot is the contract award, and the diamond is the week the output is needed."},
+{en:"Every one of these contracts delivers into an activity with zero float, so a late supplier moves the end of the project."},
+"That is why the launch is requested at the SRR, week thirty-five, and contracted at the PDR, week sixty-one: more than a year before the flight.",
+"The tightest item is the valves. Ordered when the WBS says, at the start of activity five point one point two, they leave only about twenty-six weeks before assembly. If the supplier needs longer, a production slot is reserved at the PDR.",
+"Here you finish and hand over to Roger, who starts with the risks.",
+"Idea to remember: zero float everywhere, launch contracted at the PDR, and only twenty-six weeks for the valves."]},
+{t:"Final review",d:"Key figures",p:[
+"A quick review, so it sticks.",
+"One. The D3 is one report of fifty-three pages, fifteen out of fifteen sections.",
+"Two. Laura's four comments answered: weights of one third, budget as a ceiling, six statements of work, a fifty-thousand-euro threshold.",
+"Three. Make or buy. Inside: engineering, connector, assembly and tests. Outside: flight, facilities, precision manufacturing, valves and sensors.",
+"Four. Levels: A from fifty thousand, B from fifteen to fifty thousand, C below fifteen thousand.",
+"Five. We buy almost one million euros, thirty-eight point five percent of the direct cost. Six level-A packages, seven hundred and thirty-one thousand euros, seventy-three percent.",
+"Six. The most expensive: the suborbital flight and the propellant tests, one hundred and sixty-seven thousand each.",
+"Seven. All level-A contracts feed zero-float activities. Launch requested at the SRR and contracted at the PDR. Valves with twenty-six weeks of margin.",
+"And if Laura asks why fifty thousand: a statement of work costs about six days, almost four thousand euros, and from fifty thousand that is less than eight percent of the contract.",
+"That's it. Good luck tomorrow."]}
+];
+let C=ES, lang='es';
 
 const $=id=>document.getElementById(id);
 const S=window.speechSynthesis;
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const items=[];
-C.forEach((c,ci)=>c.p.forEach((p,pi)=>{const en=typeof p==="object";const text=en?p.en:p;
-  text.split(/(?<=[.:?!])\s+/).forEach(s=>{if(s.trim())items.push({ci,pi,en,s})})}));
-
-$("list").innerHTML=C.map((c,i)=>`<li><button data-c="${i}"><span class="n">${i===0?"Intro":i===C.length-1?"Final":"Diapo "+i}</span><span class="t">${esc(c.t.replace(/^Diapositiva \d+ · /,""))}</span><span class="d">${esc(c.d)}</span></button></li>`).join("");
+let items=[];
+function build(){ items=[];
+C.forEach((c,ci)=>c.p.forEach((p,pi)=>{const q=typeof p==="object";const text=q?p.en:p;
+  text.split(/(?<=[.:?!])\s+/).forEach(s=>{if(s.trim())items.push({ci,pi,q,en:q||lang==="en",s})})}));
+const L=lang==="en";
+$("list").innerHTML=C.map((c,i)=>`<li><button data-c="${i}"><span class="n">${i===0?"Intro":i===C.length-1?(L?"Review":"Final"):(L?"Slide ":"Diapo ")+i}</span><span class="t">${esc(c.t.replace(/^(Diapositiva|Slide) \d+ · /,""))}</span><span class="d">${esc(c.d)}</span></button></li>`).join("");
 $("txt").innerHTML=C.map((c,i)=>`<section id="c${i}"><h3>${esc(c.t)}</h3>${c.p.map((p,j)=>typeof p==="object"?`<p class="en" data-k="${i}-${j}">“${esc(p.en)}”</p>`:`<p data-k="${i}-${j}">${esc(p)}</p>`).join("")}</section>`).join("");
-
+}
+build();
 let idx=0,playing=false,voices=[];
+const score=v=>{const n=v.name;let s=0;if(/Natural|Neural/i.test(n))s+=10;if(/Online/i.test(n))s+=4;if(/Premium|Mejorad|Enhanced|Siri/i.test(n))s+=8;if(/Google/i.test(n))s+=6;if(/Elvira|Alvaro|Álvaro|Ximena|Dalia|Jorge|Mónica|Monica|Paulina|Aria|Jenny|Guy|Sonia|Ryan|Libby|Samantha|Daniel|Serena/i.test(n))s+=2;if(/es-ES|en-GB/i.test(v.lang))s+=1;if(v.localService===false)s+=1;return s};
 function fill(){ if(!S)return; voices=S.getVoices();
   const opt=(re,sel)=>{const list=voices.filter(v=>re.test(v.lang));const prev=sel.value;
     sel.innerHTML=list.map(v=>`<option value="${esc(v.name)}">${esc(v.name)} (${esc(v.lang)})</option>`).join("")||'<option value="">Por defecto</option>';
-    if(prev&&list.some(v=>v.name===prev))sel.value=prev; else {const pref=list.find(v=>/Google|Mónica|Monica|Paulina|Jorge|Daniel|Samantha|Natural|Premium|Enhanced/i.test(v.name)); if(pref)sel.value=pref.name;}};
+    if(prev&&list.some(v=>v.name===prev))sel.value=prev; else {const best=list.slice().sort((a,b)=>score(b)-score(a))[0]; if(best)sel.value=best.name;}};
   opt(/^es/i,$("vEs")); opt(/^en/i,$("vEn")); }
 if(!S){$("warn").style.display="block"} else {fill(); S.onvoiceschanged=fill;}
 
@@ -201,7 +294,7 @@ function mark(){ const it=items[idx]; if(!it)return;
   document.querySelectorAll("#list button").forEach(b=>b.classList.toggle("on",+b.dataset.c===it.ci));
   document.querySelectorAll("#txt p").forEach(p=>p.classList.toggle("cur",p.dataset.k===it.ci+"-"+it.pi));
   $("now").innerHTML=`Ahora: <b>${esc(C[it.ci].t)}</b>`;
-  $("say").textContent=it.s; $("say").classList.toggle("en",it.en);
+  $("say").textContent=it.s; $("say").classList.toggle("en",it.q);
   $("prog").style.width=(100*idx/items.length)+"%"; }
 
 function speak(){ if(!S||!playing)return; if(idx>=items.length){stop();$("say").textContent="Fin del repaso.";$("prog").style.width="100%";return}
@@ -219,6 +312,11 @@ function stop(){ playing=false; if(S)S.cancel(); $("play").textContent="▶ Escu
 function jump(c){ const i=items.findIndex(x=>x.ci===c); if(i<0)return; idx=i; mark(); if(playing){S.cancel();setTimeout(speak,80)} }
 
 $("play").onclick=play;
+$("lang").onclick=()=>{stop(); lang=lang==="es"?"en":"es"; C=lang==="es"?ES:EN; idx=0; build(); mark();
+  $("lang").textContent=lang==="es"?"🌐 English version":"🌐 Versión en español";
+  $("now").innerHTML=lang==="es"?"Pulsa <b>Escuchar</b> para empezar":"Press <b>Escuchar</b> to start";
+  document.querySelector(".lead").textContent=lang==="es"?"Diapositivas 1 a 7: el inicio y el capítulo de compras (procurement). Unos 12 minutos. Las frases en naranja son las que dirás en inglés.":"Slides 1 to 7: the opening and the procurement chapter. About 12 minutes, all in English. Orange lines are the sentences you will say.";
+  document.documentElement.lang=lang;};
 $("stop").onclick=()=>{stop();idx=0;mark()};
 $("next").onclick=()=>jump(Math.min(C.length-1,(items[idx]?.ci??0)+1));
 $("prev").onclick=()=>{const c=items[idx]?.ci??0; const first=items.findIndex(x=>x.ci===c); jump(idx>first+1?c:Math.max(0,c-1))};
